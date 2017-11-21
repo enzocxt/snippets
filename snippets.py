@@ -192,3 +192,34 @@ add.implementations = {('com', 'com'): add_complex,
 print(add(ComplexRI(1.5, 0), Rational(3, 2)))
 print(add(Rational(5, 3), Rational(1, 2)))
 
+class Base(object):
+    def __init__(self):
+        self.x = 0
+
+    def setvalue(self, x):
+        self.x = x
+        return x
+
+class BaseA(Base):
+    def __init__(self):
+        super(BaseA, self).__init__()
+
+    def setvalue(self, x):
+        return super(BaseA, self).setvalue(x-1)
+
+class BaseB(Base):
+    def __init__(self):
+        super(BaseB, self).__init__()
+
+    def setvalue(self, x):
+        return super(BaseB, self).setvalue(x+1)
+
+c = Base()
+c.setvalue(3)
+print c.x
+a = BaseA()
+a.setvalue(3)
+print a.x
+b = BaseB()
+b.setvalue(3)
+print b.x
