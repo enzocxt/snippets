@@ -1,0 +1,23 @@
+/* Mac 13.3 寸的浏览器屏幕（Chrome浏览器显示标签栏和地址栏）高度为 726px */
+
+/* rem (font size of the root element) 是指相对于根元素的字体大小的单位 */
+/* 比如定义： */
+html{
+  font-size: 14px;
+}
+
+/* 如果设置为 2rem 的话就相当于 2*14px */
+.text-box{
+  font-size: 2rem;
+}
+
+/*
+可以理解为，一旦根节点 html 定义的 font-size 变化，
+那么整个网页中运用到的 rem 也会变化
+*/
+
+/*
+当按百分比设定一个元素的宽度时，它是相对父容器的宽度计算的，
+但是，对于一些表示竖向距离的属性，如 padding-top, padding-bottom 等，
+当按百分比设定时，也是依据父容器的宽度，而不是高度
+*/

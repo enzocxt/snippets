@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<!--
+XAMPP上的luminocity首页登录地址
+"http://localhost/luminocity/home.html"
+问题：
+1. 图书封面 (已解决)
+  《杰弗里·巴瓦作品全集》《进程》没有单独的封面图
+  (解决) # 百工（BG01）和热力学建筑视野下的空气提案（WM）封面图尺寸太大（1654 x 2469 和 1339 x 1871），
+  其它封面图尺寸同行在几百乘几百，导致 BG 和 WM 的封面超出。
+2. excel 文件《光明城书目信息0319改》中编号3和6是同一本书么，以什么名字
+   3 是多余的，删掉
+   数据库中的信息是 XA 的，而图书图片中的名字是 JC
+   Dropbox 共享文件夹 光明城图片整理《绘本非常建筑》英文缩写 FCJJ（FCJZ）是写错了么？
+3. 图书 slideshow 的图书详细信息底部与光明城中文 Logo 底部对齐，
+   但（如《败壁与废墟》）图书 book_info 与 abstract 不一样长
+   有时 book_info 更长，通常 abstract 更长，
+   abstract 很短时 Logo 底部与 abstract 对齐还是与book_info
+
+如果点击图书 thumb 页面显示有问题，
+先检查 book_info.php, book_img.php, docready.js 文件
+是否在数据库和 url 等地方使用了 XAMPP 的信息
+
+<script type="text/javascript" src="js/jquery-1.7.1.min.js"></script>
+这一行放在 html 代码最后（ body 标签之前）为什么没有用
+网页有些内容无法显示
+解决：
+原因是没有把所有的该标签代码都放到最后
+在 html 代码 head 前面还有 script 标签的代码
+这些代码会引用 jquery-1.7.1.min.js 代码
+所以只把这一行放在 html 最后是错误的
+要把所有有互相引用的 script 标签代码都放在最后才行
+
+-->
