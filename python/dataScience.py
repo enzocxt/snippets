@@ -2,6 +2,7 @@
 
 import sys, io
 import codecs
+import time
 
 from utils import timeit
 
@@ -91,23 +92,37 @@ def test_largefile(filename):
 
 @timeit
 def test_pd_large(filename):
+    starttime = time.time()
+
+    tokens = ['wolk/noun', 'zon/noun', 'wolk_DIM/noun',
+              'zon_DIM/noun', 'wolkje/noun', 'zonetje/noun']
+
     header = None
     with codecs.open(filename, 'r', 'latin1') as inf:
         i = 0
         header = inf.readline()
     header = header.strip().split('\t')
+    # collocate, node, cur_c_a_b, cur_c_a_nb, cur_c_na_b, cur_c_na_nb
+    # cur_lik_stat, cur_p_compl, wfreq_b, wfreq_nb, direction
 
-    N = 1000000
+    N = 3000000
     blocks = readNLines(filename, 'latin1', N)
     headers = None
+    i = 0
     for blk in blocks:
         data = u'\n'.join(blk)
         df = pd.read_csv(io.StringIO(data), names=header, sep='\t', na_values=['*'], error_bad_lines=False, low_memory=False)
-        print df.columns
-        print df.dtypes
-        exit(-1)
+        print df[df['node'].isin(tokens)][['collocate', 'node']]
+        # print "---------------------------"
+        # print df[df.node=="alone/name"][['collocate', 'node']]
+        print "{} lines processed".format(i * N)
+        print "{} time cost".format(time.time() - starttime)
+        print "*******************************************"
+        starttime = time.time()
+
+        i += 1
 
 
 if __name__ == '__main__':
-    filename = "/home/enzocxt/Projects/QLVL/typetoken_workdir/tokenclouds/input/LeNC-4-4.1000000.colstats"
+    filename = "/home/enzocxt/Projects/QLVL/typetoken_workdir/tokenclouds/input/LeNC-4-4.colstats"
     test_pd_large(filename)
