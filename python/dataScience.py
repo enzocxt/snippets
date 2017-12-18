@@ -3,6 +3,7 @@
 import sys, io
 import codecs
 import time
+import csv
 
 from utils import timeit
 
@@ -97,7 +98,6 @@ def test_pd_large(filename):
     tokens = ['wolk/noun', 'zon/noun', 'wolk_DIM/noun',
               'zon_DIM/noun', 'wolkje/noun', 'zonetje/noun']
 
-    header = None
     with codecs.open(filename, 'r', 'latin1') as inf:
         i = 0
         header = inf.readline()
@@ -105,22 +105,60 @@ def test_pd_large(filename):
     # collocate, node, cur_c_a_b, cur_c_a_nb, cur_c_na_b, cur_c_na_nb
     # cur_lik_stat, cur_p_compl, wfreq_b, wfreq_nb, direction
 
-    N = 3000000
+    N = 1000000
     blocks = readNLines(filename, 'latin1', N)
-    headers = None
+
+    nerrors = 0
+    ninterr = 0
     i = 0
+    df_dtypes = {'collocate': unicode,
+                     'node': unicode,
+                     'cur_c_a_b': np.int64,
+                     'cur_c_a_nb': np.int64,
+                     'cur_c_na_b': np.int64,
+                     'cur_c_na_nb': np.int64,
+                     'cur_lik_stat': np.float64,
+                     'cur_p_compl': np.float64,
+                     'wfreq_b': np.float64,
+                     'wfreq_nb': np.float64,
+                     'direction': np.float64}
     for blk in blocks:
+        for line in blk:
+            eles = line.split('\t')
+
+            if "'" in line:
+                nerrors += 1
+            try:
+                i2 = np.int(eles[2])
+            except:
+                ninterr += 1
+
         data = u'\n'.join(blk)
-        df = pd.read_csv(io.StringIO(data), names=header, sep='\t', na_values=['*'], error_bad_lines=False, low_memory=False)
-        print df[df['node'].isin(tokens)][['collocate', 'node']]
+        # df = pd.read_csv(io.StringIO(data), names=header, sep='\t', na_values=['n/a'], low_memory=False)
+        '''
+        ERROR:
+        pandas.errors.ParserError: Error tokenizing data.
+        C error: EOF inside string starting at line
+        The line listed with the 'EOF inside string' had a string
+        that contained within it a single quote mark.
+        add the option quoting=csv.QUOTE_NONE it fixed the problem
+        '''
+        df = pd.read_csv(io.StringIO(data), names=header, sep='\t', dtype=df_dtypes, quoting=csv.QUOTE_NONE)
+
+        print df.shape
+        print df.dtypes
+        # print df[df['node'].isin(tokens)][['collocate', 'node']]
         # print "---------------------------"
         # print df[df.node=="alone/name"][['collocate', 'node']]
-        print "{} lines processed".format(i * N)
-        print "{} time cost".format(time.time() - starttime)
-        print "*******************************************"
+        # print "{} lines processed".format(i * N)
+        # print "{} time cost".format(time.time() - starttime)
+        # print "*******************************************"
         starttime = time.time()
-
         i += 1
+        if df.shape[0] != N:
+            break
+        exit(-1)
+
 
 
 if __name__ == '__main__':
