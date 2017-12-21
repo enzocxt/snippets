@@ -4,6 +4,7 @@ import sys, io
 import codecs
 import time
 import csv
+from itertools import islice
 
 from utils import timeit
 
@@ -74,6 +75,21 @@ def readNLines(filename, file_encoding, N):
                 block = []
         yield block
 
+def readLice(filename, file_encoding, N):
+    with codecs.open(filename, 'r', file_encoding) as inf:
+        chunk = islice(inf, N)
+        while chunk:
+            yield chunk
+            chunk = islice(inf, N)
+
+def readChunk(filename, file_encoding, size):
+    with codecs.open(filename, 'r', file_encoding) as inf:
+        _header = inf.readline()
+        chunk = inf.read(size)
+        while chunk:
+            yield chunk
+            chunk = inf.read(size)
+
 @timeit
 def test_largefile(filename):
     N = 1000000
@@ -107,9 +123,9 @@ def test_pd_large(filename):
 
     N = 1000000
     blocks = readNLines(filename, 'latin1', N)
+    #N = 100 * 1024 * 1024
+    #blocks = readChunk(filename, 'latin1', N)
 
-    nerrors = 0
-    ninterr = 0
     i = 0
     df_dtypes = {'collocate': unicode,
                      'node': unicode,
@@ -122,19 +138,14 @@ def test_pd_large(filename):
                      'wfreq_b': np.float64,
                      'wfreq_nb': np.float64,
                      'direction': np.float64}
+    lastLine = ''
     for blk in blocks:
-        for line in blk:
-            eles = line.split('\t')
-
-            if "'" in line:
-                nerrors += 1
-            try:
-                i2 = np.int(eles[2])
-            except:
-                ninterr += 1
-
         data = u'\n'.join(blk)
-        # df = pd.read_csv(io.StringIO(data), names=header, sep='\t', na_values=['n/a'], low_memory=False)
+
+        #lastIdx = blk.rfind('\n')
+        #print '**** last line ****\n{}\n****************'.format(lastLine)
+        #data = lastLine + blk[:lastIdx]
+        #lastLine = blk[(lastIdx+1):]
         '''
         ERROR:
         pandas.errors.ParserError: Error tokenizing data.
@@ -143,7 +154,8 @@ def test_pd_large(filename):
         that contained within it a single quote mark.
         add the option quoting=csv.QUOTE_NONE it fixed the problem
         '''
-        df = pd.read_csv(io.StringIO(data), names=header, sep='\t', dtype=df_dtypes, quoting=csv.QUOTE_NONE)
+        df = pd.read_csv(io.StringIO(data), names=header, sep='\t', dtype=df_dtypes,
+        error_bad_lines=False, quoting=csv.QUOTE_NONE, low_memory=False)
 
         print df.shape
         print df.dtypes
@@ -151,16 +163,15 @@ def test_pd_large(filename):
         # print "---------------------------"
         # print df[df.node=="alone/name"][['collocate', 'node']]
         # print "{} lines processed".format(i * N)
-        # print "{} time cost".format(time.time() - starttime)
+        print "{} time cost".format(time.time() - starttime)
         # print "*******************************************"
         starttime = time.time()
         i += 1
-        if df.shape[0] != N:
-            break
-        exit(-1)
-
+        if i > 2:
+            exit(-1)
 
 
 if __name__ == '__main__':
+    # lines of this file: 70567602
     filename = "/home/enzocxt/Projects/QLVL/typetoken_workdir/tokenclouds/input/LeNC-4-4.colstats"
     test_pd_large(filename)
