@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" type="text/css" href="../_extra/tokenlist.css">
+<title>${NEUTRALWORD}</title>
+</head>
+<body>
+<script src="../_extra/d3.min.js"  charset="utf-8"></script>
+<div><h1><a href="../">&nbsp;</a>${NEUTRALWORD}</h1></div>
+<div><svg class="chart"></svg></div>
+<script src="../_extra/buildplot.js"  charset="utf-8"></script>
+<table>
+${TOKENS}
+</table>
+</body>
+</html>

@@ -1,4 +1,37 @@
+/** 上传文件
+要使用 PHP 上传文件，首先要保证 php.ini 文件中
+file_uploads=On
 
+参考博客：
+http://www.cnblogs.com/thenbsp/archive/2011/07/15/2107503.html
+http://blog.p2hp.com/archives/2924
+
+<form action="upload.php"  method="post"  enctype="multipart/form-data">
+  <input type="hidden" name="MAX_FILE_SIZE" value="1000000">
+  选择文件：<input type="file" name="myfile">
+  <input type="submit" name="submit" value="上传文件">
+</form>
+
+注意几个特征属性:
+POST方法:
+表单最常用的功能，向目标页面传递变量，
+我们在上传文件的时候，会在表单中设置相应的属性，来完成文件的传递
+
+enctype="multipart/form-data"
+这样服务器就会知道，我们要传递一个文件，
+这样服务器可以知道上载的文件带有常规的表单信息。
+
+MAX_FILE_SIZE
+此字段必须在文件输入字段之前，控制最大的传递文件的大小(字节)
+
+<input type="file" name="userfile">
+设置浏览器文件输入浏览按钮
+
+在 PHP 代码中有两个重要的变量 $_POST 和 $_FILES
+$_POST['submit'] 中的参数名对应 <input type="submit" ...> 中的 name 值
+$_FILES['myfile'] 中的参数名对应 <input type="file" ...> 中的 name 值
+注意这一点，否则 PHP 代码将会出现类似 Undefined index 的问题
+ */
 
 // 如果把 '.slideshow img' 放到前面就出错，是不是因为有 .slideshow 和 img 两个标签？？？
 $('body').on('click', '.slideshow img', function(e) {

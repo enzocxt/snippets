@@ -68,3 +68,10 @@ $ ln -s source_file dest_file
 # 1.硬链接，以文件副本的形式存在。但不占用实际空间。
 # 2.不允许给目录创建硬链接
 # 3.硬链接只有在同一个文件系统中才能创建
+
+# --------------------------------------------------------------------------
+# ps 命令是 process status 的缩写
+# ps 与 grep 常用组合用法，查找特定进程
+$ ps -ef | grep nginx
+# UID        PID  PPID  C STIME TTY          TIME CMD
+# enzocxt   4534  2877  0 15:22 pts/18   00:00:00 grep --color=auto nginx

@@ -22,6 +22,35 @@ def timeit(fn):
         return result
     return timer
 
+def readNLines(filename, file_encoding, N):
+    with codecs.open(filename, 'r', file_encoding) as inf:
+        i = 0
+        headers = inf.readline()
+        block = []
+        for inl in inf:
+            i += 1
+            block.append(inl.strip())
+            if i % N == 0:
+                yield block
+                block = []
+        yield block
+
+def readLice(filename, file_encoding, N):
+    with codecs.open(filename, 'r', file_encoding) as inf:
+        chunk = islice(inf, N)
+        while chunk:
+            yield chunk
+            chunk = islice(inf, N)
+
+def readChunk(filename, file_encoding, size):
+    with codecs.open(filename, 'r', file_encoding) as inf:
+        _header = inf.readline()
+        chunk = inf.read(size)
+        while chunk:
+            yield chunk
+            chunk = inf.read(size)
+
+
 def readFilenames(corpus_path, fnames_ext, file_encoding):
     """
     this method does not accept leading or trailing whitespace in filenames
