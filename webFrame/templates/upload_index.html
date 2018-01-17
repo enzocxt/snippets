@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Upload Test</title>
+</head>
+<body>
+    <h1>Upload Test</h1>
+    <form action="/upload" method="post" enctype="multipart/form-data">
+        <input type="hidden" name="MAX_FILE_SIZE" value="10000">
+        <input type="file" name="file" value="choose file">
+        <br>
+        <input type="submit" name="submit" value="upload">
+        <!--<button type="submit">添加</button>-->
+    </form>
+    <div>{{uploads}}</div>
+</body>
+</html>

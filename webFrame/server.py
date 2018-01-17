@@ -3,10 +3,11 @@ import urllib.parse
 
 from utils import log
 
-from routes import route_static
+from routes import route_static, route_static_uploads
 from routes import route_dict
 # 注意要用 from import as 来避免重名
 from routes_todo import route_dict as todo_route
+from routes_upload import route_dict as upload_route
 
 
 # 定义一个 class 用于保存请求的数据
@@ -108,12 +109,14 @@ def response_for_path(path):
     """
     r = {
         '/static': route_static,
+        '/static/uploads': route_static_uploads
         # '/': route_index,
         # '/login': route_login,
         # '/messages': route_message,
     }
     r.update(route_dict)
     r.update(todo_route)
+    r.update(upload_route)
     response = r.get(path, error)
     return response(request)
 
@@ -132,7 +135,14 @@ def run(host='', port=3000):
             # 监听 接受 读取请求数据 解码成字符串
             s.listen(3)
             connection, address = s.accept()
-            r = connection.recv(1000)
+            r = b''
+            buffer_size = 1024
+            while True:
+                res = connection.recv(buffer_size)
+                r += res
+                if len(res) < buffer_size:
+                    break
+            # r = connection.recv(1000)
             r = r.decode('utf-8')
             log('ip and request, {}\n{}'.format(address, r))
             # 因为 chrome 会发送空请求导致 split 得到空 list
@@ -147,6 +157,7 @@ def run(host='', port=3000):
             request.body = r.split('\r\n\r\n', 1)[1]
             # 用 response_for_path 函数来得到 path 对应的响应内容
             response = response_for_path(path)
+
             log('debug **', 'sendall')
             # 把响应发送给客户端
             connection.sendall(response)
