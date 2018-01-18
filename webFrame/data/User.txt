@@ -1,5 +1,10 @@
 [
   {
+    "password": "1234567",
+    "username": "luminocity",
+    "id": 0
+  },
+  {
     "password": "123",
     "username": "gua",
     "id": 1

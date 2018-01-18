@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>显示所有书本信息</title>
+</head>
+<body>
+    <h1>书本信息</h1>
+    <form action="/books/add" method="post">
+        <input type="text" name="id" placeholder="编号">
+        <input type="text" name="name" placeholder="标题">
+        <input type="text" name="author" placeholder="作者">
+        <input type="text" name="date" placeholder="出版时间">
+        <br>
+        <button type="submit">添加</button>
+    </form>
+    <div>{{books}}</div>
+</body>
+</html>

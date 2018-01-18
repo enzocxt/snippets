@@ -1,6 +1,6 @@
 from utils import log
 from models import Message
-from models import User
+from models import User, Admin
 
 import random
 
@@ -117,6 +117,41 @@ def route_login(request):
     return r.encode(encoding='utf-8')
 
 
+def route_login_admin(request):
+    """
+    管理员登录页面的路由函数
+    """
+    headers = {
+        'Content-Type': 'text/html',
+        # 'Set-Cookie': 'height=169; gua=1; pwd=2; Path=/',
+    }
+    # log('\n  login, cookies', request.cookies)
+    if request.method == 'POST':
+        form = request.form()
+        u = Admin.new(form)
+        if u.validate_admin():
+            log('\n  login, cookies', request.cookies)
+            # 设置一个随机字符串来当令牌使用
+            session_id = random_str()
+            session[session_id] = u.username
+            headers['Set-Cookie'] = 'user={}'.format(session_id)
+            result = '登录成功'
+        else:
+            result = '用户名或者密码错误'
+    else:
+        result = ''
+    username = current_user(request)
+    log('\n  username', username)
+
+    body = template('login_admin.html')
+    body = body.replace('{{result}}', result)
+    body = body.replace('{{username}}', username)
+    header = response_with_headers(headers)
+    r = header + '\r\n' + body
+    log('login 的响应', r)
+    return r.encode(encoding='utf-8')
+
+
 def route_register(request):
     """
     注册页面的路由函数
@@ -191,6 +226,7 @@ def route_static_uploads(request):
 route_dict = {
     '/': route_index,
     '/login': route_login,
+    '/login/admin': route_login_admin,
     '/register': route_register,
     '/messages': route_message,
 }

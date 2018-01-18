@@ -190,6 +190,14 @@ class User(Model):
     def validate_register(self):
         return len(self.username) > 2 and len(self.password) > 2
 
+    def validate_admin(self):
+        return self.username == 'luminocity' and self.password == '1234567'
+
+
+class Admin(User):
+    def __init__(self, form):
+        super(Admin, self).__init__(form)
+
 
 class Message(Model):
     """

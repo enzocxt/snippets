@@ -8,6 +8,7 @@ from routes import route_dict
 # 注意要用 from import as 来避免重名
 from routes_todo import route_dict as todo_route
 from routes_upload import route_dict as upload_route
+from routes_info import route_dict as info_route
 
 
 # 定义一个 class 用于保存请求的数据
@@ -117,6 +118,7 @@ def response_for_path(path):
     r.update(route_dict)
     r.update(todo_route)
     r.update(upload_route)
+    r.update(info_route)
     response = r.get(path, error)
     return response(request)
 
@@ -144,17 +146,18 @@ def run(host='', port=3000):
                     break
             # r = connection.recv(1000)
             r = r.decode('utf-8')
-            log('ip and request, {}\n{}'.format(address, r))
             # 因为 chrome 会发送空请求导致 split 得到空 list
             # 所以这里判断一下防止程序崩溃
             if len(r.split()) < 2:
                 continue
-            path = r.split()[1]
+            header, content = r.split('\r\n\r\n', 1)
+            log('ip and request, {}\n{}'.format(address, header))
+            path = header.split()[1]
             # 设置 request 的 method
-            request.method = r.split()[0]
-            request.add_headers(r.split('\r\n\r\n', 1)[0].split('\r\n')[1:])
+            request.method = header.split()[0]
+            request.add_headers(header.split('\r\n')[1:])
             # 把 body 放入 request 中
-            request.body = r.split('\r\n\r\n', 1)[1]
+            request.body = content
             # 用 response_for_path 函数来得到 path 对应的响应内容
             response = response_for_path(path)
 
