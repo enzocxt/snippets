@@ -1,0 +1,5 @@
+02-03 21:45 root DEBUG   entering fun1
+02-03 21:45 root DEBUG     entering fun2
+02-03 21:45 root DEBUG       entering fun4
+02-03 21:45 root DEBUG     entering fun3
+02-03 21:45 root DEBUG       entering fun5

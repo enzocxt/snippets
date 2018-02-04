@@ -64,8 +64,13 @@ def index(request):
     for b in book_list:
         edit_link = '<a href="/book/edit?id={}">编辑</a>'.format(b.id)
         delete_link = '<a href="/book/delete?id={}">删除</a>'.format(b.id)
-        s = '<h3>{} : {} {} {}</h3>'.format(b.id, b.name, edit_link, delete_link)
+        # detail = b.detail
+        # detail.pop('内容概要')
+        # detail.pop('作者简介')
+        # binfo = ' '.join(map(str, list(detail.values())[:-1]))
+        s = '<h5>{}: {} {} {}</h5>'.format(b.id, b.name, edit_link, delete_link)
         books.append(s)
+    # book_html = '<h5>' + ' '.join(book_list[0].detail.keys()) + '</h5>'
     book_html = ''.join(books)
     # 替换模板文件中的标记字符串
     body = template('book_index.html')
