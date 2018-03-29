@@ -7,288 +7,162 @@ import pandas as pd
 import numpy as np
 # import matplotlib.pyplot as plt
 
-from utils import loadDictFromFile, saveDict2File
-
 
 class FrequencyDict(object):
 
-    def __init__(self, freqDict=None, file_encoding='utf-8'):
+    def __init__(self, freq_dict=None, file_encoding='utf-8'):
         """
-        :param freqDict:
+        :param freq_dict:
             it could be a python dict or collections.defaultdict
             or it could be the filename of such a frequency dict
         :param file_encoding:
             encoding of corpus files, with default utf-8
         """
-        self.freqDict = defaultdict(int)
+        self.freq_dict = defaultdict(int)
         self.FILTERPRESENT = False
         self.file_encoding = file_encoding
-        self.freqDict, self.FILTERPRESENT = self._construct(freqDict, file_encoding)
+        self.freq_dict, self.FILTERPRESENT = self._construct(freq_dict, file_encoding)
 
     @staticmethod
-    def _construct(freqDict, file_encoding):
-        if freqDict is None:
+    def _construct(freq_dict, file_encoding):
+        if freq_dict is None:
             return defaultdict(int), False
-        elif isinstance(freqDict, defaultdict) or isinstance(freqDict, dict):
-            # if the given freqDict is already a dict
-            return freqDict, True
-        elif isinstance(freqDict, str):
-            # if the given freqDict is the filename of frequency dict
-            return loadDictFromFile(filename=freqDict, file_encoding=file_encoding), True
+        elif isinstance(freq_dict, defaultdict) or isinstance(freq_dict, dict):
+            # if the given freq_dict is already a dict
+            return freq_dict, True
+        elif isinstance(freq_dict, str):
+            # if the given freq_dict is the filename of frequency dict
+            return loadDictFromFile(filename=freq_dict, file_encoding=file_encoding), True
         else:
-            raise ValueError, "Error: the freqDict parameter should be a dict or dict filename!"
+            raise ValueError, "Error: the freq_dict parameter should be a dict or dict filename!"
+
+    def __contains__(self, item):
+        return item in self.freq_dict
+
+    def __getitem__(self, item):
+        if isinstance(item, list):
+            d = dict()
+            if len(item) > 0:
+                if isinstance(item[0], str):
+                    return self._select_by_items(item)
+                elif isinstance(item[0], int):
+                    return self._select_by_freqs(item)
+                else:
+                    raise NotImplementedError
+            else:
+                return FrequencyDict(d)
+        elif isinstance(item, tuple):
+            d = self
+            for i in range(len(item)):
+                cond = item[i]
+                d = d.__getitem__(cond)
+            return d
+        elif isinstance(item, str):
+            return self.freq_dict[item]
+        else:
+            raise NotImplementedError
+
+    def _select_by_items(self, items):
+        d = dict()
+        items_set = set(items)
+        for k, v in self.freq_dict.iteritems():
+            if k in items_set:
+                d[k] = v
+        return FrequencyDict(d)
+
+    def _select_by_freqs(self, freqs):
+        d = dict()
+        freqs_set = set(freqs)
+        for k, v in self.freq_dict.iteritems():
+            if v in freqs_set:
+                d[k] = v
+        return FrequencyDict(d)
+
+    def __setitem__(self, key, value):
+        self.freq_dict[key] = value
+
+    def __getattr__(self, attr):
+        if attr == 'freq':
+            return self
+
+    def __lt__(self, other):
+        res = []
+        if isinstance(other, int):
+            for k, v in self.freq_dict.iteritems():
+                if v < other:
+                    res.append(k)
+        else:
+            raise NotImplementedError
+
+        return res
+
+    def __le__(self, other):
+        res = []
+        if isinstance(other, int):
+            for k, v in self.freq_dict.iteritems():
+                if v <= other:
+                    res.append(k)
+        else:
+            raise ValueError("Error: unsupported value!")
+
+        return res
+
+    def __eq__(self, other):
+        res = []
+        if isinstance(other, int):
+            for k, v in self.freq_dict.iteritems():
+                if v == other:
+                    res.append(k)
+
+    def __gt__(self, other):
+        res = []
+        if isinstance(other, int):
+            for k, v in self.freq_dict.iteritems():
+                if v > other:
+                    res.append(k)
+        else:
+            raise ValueError("Error: unsupported value!")
+
+        return res
+
+    def __ge__(self, other):
+        res = []
+        if isinstance(other, int):
+            for k, v in self.freq_dict.iteritems():
+                if v >= other:
+                    res.append(k)
+        else:
+            raise ValueError("Error: unsupported value!")
+
+        return res
+
+    def __len__(self):
+        return len(self.freq_dict.keys())
 
     # ------- basic methods -------
     def keys(self):
-        return self.freqDict.keys()
+        return self.freq_dict.keys()
 
     def values(self):
-        return self.freqDict.values()
+        return self.freq_dict.values()
 
     def items(self):
-        return self.freqDict.items()
+        return self.freq_dict.items()
 
     def iteritems(self):
-        return self.freqDict.iteritems()
+        return self.freq_dict.iteritems()
 
-    def getFreqDict(self):
-        return self.freqDict
-
-    def getKeys(self):
-        return self.freqDict.keys()
+    def get_dict(self):
+        return self.freq_dict
 
     def isEmpty(self):
-        return True if not self.freqDict else False
+        return True if not self.freq_dict else False
 
     def setFILTER(self, value):
         self.FILTERPRESENT = value
 
-    def __contains__(self, item):
-        return item in self.freqDict
-
-    def __getitem__(self, item):
-        return self.freqDict[item]
-
-    def __setitem__(self, key, value):
-        self.freqDict[key] = value
-
-    def __len__(self):
-        return len(self.freqDict.keys())
-
-    def increment(self, key, inc):
-        if key in self.freqDict:
-            self.freqDict[key] += inc
-        else:
-            self.freqDict[key] = inc
-
-    # ------- file methods -------
-    def saveDict2File(self, filename, order='alpha'):
-        saveDict2File(self.freqDict, filename, self.file_encoding, order=order)
-
-    @classmethod
-    def load_dict(cls, filename, file_encoding='utf-8'):
-        return loadDictFromFile(filename, file_encoding=file_encoding)
-
-    def loadDictFromFile(self, filename, i=1, n='all', setToZero=False):
-        """
-        transform word/type/token frequency file to dictionary
-        :param filename: frequency file name
-        :param i:
-        :param n:
-        :param setToZero:
-        :return:
-        """
-        self.freqDict = loadDictFromFile(filename, file_encoding=self.file_encoding)
-        return self.freqDict
-
-    def sumFreq(self):
-        retVal = 0
-        for key in self.freqDict:
-            retVal += self.freqDict[key]
-        return retVal
-
-    # ------- filter methods -------
-    def removeHigh(self, dict=None, threshold=0, num=0):
-        """
-        remove items:
-            whose frequency is higher than threshold
-            or whose frequency is among the 'num' highest
-        :param dict: user could provide a dict, if not use the self.freqDict
-        :param threshold: remove items whose frequency is higher than threshold
-        :param num: remove the highest 'num' items
-        :return: FrequencyDict object
-        """
-        if dict is None:
-            dict = self.freqDict
-        if threshold != 0:
-            if num != 0:
-                raise ValueError, "Could not use threshold and num at the same time!!!"
-            else:
-                ret = self.removeFreqHigherThan(dict, threshold)
-        else:
-            if num != 0:
-                ret = self.removeHighest(dict, num)
-            else:
-                ret = self
-        return ret
-
-    @staticmethod
-    def removeFreqHigherThan(dict=None, threshold=0):
-        d = {k: v for k, v in dict.iteritems() if v <= threshold}
-        return FrequencyDict(d)
-
-    @staticmethod
-    def removeHighest(dict=None, num=0):
-        d = sorted(dict.iteritems(), key=operator.itemgetter(1), reverse=True)[num:]
-        d = {k: v for k, v in d}
-        return FrequencyDict(d)
-
-    def removeLow(self, dict=None, threshold=0, num=0):
-        """
-        remove items:
-            whose frequency is lower than threshold
-            or whose frequency is among the 'num' lowest
-        :param dict: user could provide a dict, if not use the self.freqDict
-        :param threshold: remove items whose frequency is lower than threshold
-        :param num: remove the lowest 'num' items
-        :return: FrequencyDict object
-        """
-        if dict is None:
-            dict = self.freqDict
-        if threshold != 0:
-            if num != 0:
-                raise ValueError, "Could not use threshold and num at the same time!!!"
-            else:
-                ret = self.removeFreqLowerThan(dict, threshold)
-        else:
-            if num != 0:
-                ret = self.removeLowest(dict, num)
-            else:
-                ret = self
-        return ret
-
-    @staticmethod
-    def removeFreqLowerThan(dict=None, threshold=0):
-        d = {k: v for k, v in dict.iteritems() if v >= threshold}
-        return FrequencyDict(d)
-
-    @staticmethod
-    def removeLowest(dict=None, num=0):
-        d = sorted(dict.iteritems(), key=operator.itemgetter(1), reverse=True)[:-num]
-        d = {k: v for k, v in d}
-        return FrequencyDict(d)
-
-    def getNouns(self, dict=None):
-        if dict is None:
-            dict = self.freqDict
-        # case 'xx//' would be a problem
-        f = lambda x : True if len(x.split('/')[-1])>0 and x.split('/')[-1][0].lower() == 'n' else False
-        d = {k: v for k, v in dict.iteritems() if f(k)}
-        return FrequencyDict(d)
-
-    def getVerbs(self, dict=None):
-        if dict is None:
-            dict = self.freqDict
-        f = lambda x : x.split('/')[-1][0].lower() == 'v'
-        d = {k: v for k, v in dict.iteritems() if f(k)}
-        return FrequencyDict(d)
-
-    def keepAlpha(self, dict=None):
-        if dict is None:
-            dict = self.freqDict
-        f = lambda x : x.split('/')[0].isalpha()
-        d = {k: v for k, v in dict.iteritems() if f(k)}
-        return FrequencyDict(d)
-
-    def keepLowercase(self, dict=None):
-        if dict is None:
-            dict = self.freqDict
-        f = lambda x : x.split('/')[0].islower()
-        d = {k: v for k, v in dict.iteritems() if f(k)}
-        return FrequencyDict(d)
-
-    def keepLengthLongerThan(self, dict=None, length=0):
-        if dict is None:
-            dict = self.freqDict
-        f = lambda x : len(x.split('/')[0]) > length
-        d = {k: v for k, v in dict.iteritems() if f(k)}
-        return FrequencyDict(d)
-
-    def getMostFreq(self, dict=None, num=0):
-        """
-        get a number of most frequent items
-        :param num: return how many most frequent items
-        :return: the filtered dict
-        """
-        if dict is None:
-            dict = self.freqDict
-        d = sorted(dict.iteritems(), key=operator.itemgetter(1), reverse=True)
-        return FrequencyDict(dict(d[:num]))
-
-    def getMostNonFreq(self, dict=None, num=0):
-        """
-        get a number of most non-frequent items
-        :param num: return how many most non-frequent items
-        :return: the filtered dict
-        """
-        if dict is None:
-            dict = self.freqDict
-        d = sorted(dict.iteritems(), key=operator.itemgetter(1))
-        return FrequencyDict(dict(d[:num]))
-
-    def filter_by_tagset(self, filename):
-        tagset = set()
-        with open(filename, 'r') as inFile:
-            for line in inFile:
-                tagset.add(line.strip().split('\t')[0])
-
-        newDict = dict()
-        for key, value in self.freqDict.iteritems():
-            if key.split('/')[-1] in tagset:
-                newDict[key] = value
-        return FrequencyDict(newDict)
-
-    def filter(self, regex=None, thresholdHigh=sys.maxint, numHighest=0, thresholdLow=0, numLowest=0, outFilename=None):
-        """
-        :param regex: give regular expression
-        :param cutOff: cut off frequency
-        :param numMostFreq: remove a number of most frequent items
-        :param outFilename:
-        :return:
-        """
-
-        items = sorted(self.freqDict.iteritems(), key=operator.itemgetter(1), reverse=True)
-        # remove numHighest and numLowest items
-        items = items[numHighest:(len(items) - numLowest)]
-        # remove items with frequency larger than thresholdHigh and smaller than thresholdLow
-        d = {k: v for k, v in items if thresholdLow <= v <= thresholdHigh}
-        resDict = FrequencyDict(d)
-
-        if not regex:
-            return resDict
-
-        # if user provides regular expression
-        m = re.compile(regex)
-        fdict = filter(lambda x: m.match(x[0]), d.items())
-        fdict = dict(fdict)
-        resDict = FrequencyDict(fdict)
-
-        if outFilename:
-            resDict.saveDict2File(outFilename)
-        return resDict
-
-    def some(self):
-        # fig, ax = plt.subplots()
-        data = sorted(self.freqDict.values())
-        s = pd.Series(data)
-        #s = s.value_counts()
-        #s.plot(ax=ax)
-        s.hist()
-        # plt.show()
-
-
     def __repr__(self):
-        items = self.freqDict.items()
+        items = self.freq_dict.items()
         if len(items) <= 7:
             return '[{}]'.format(','.join(map(str, items)))
         items = sorted(items, key=operator.itemgetter(1), reverse=True)
@@ -299,65 +173,11 @@ class FrequencyDict(object):
         return self.__repr__()
 
 
-class CollocDict(FrequencyDict):
-    """
-    This CollocDict could be used for word dict and context dict.
-    It has two attributes: freqDict and item2id
-    freqDict: inherited freqDict of FrequencyDict
-    item2id:  item to id mapping built on freqDict
-    """
-    def __init__(self, freqDict=None, file_encoding='utf-8', order='alpha'):
-        """
-        :param freqDict: dict or filename
-            if freqDict is not None
-            build item2id mapping
-        """
-        super(CollocDict, self).__init__(freqDict=freqDict, file_encoding=file_encoding)
-        # if dict is not None, the super() function will build freqDict first
-        self.item2id = defaultdict(int) if freqDict is None else self.buildItem2IDFromFreqDict(order=order)
-        self._order = order
-
-    def buildItem2IDFromFreqDict(self, dict=None, order='alpha'):
-        """
-        build item2id mapping from the frequency dict
-        :param dict: frequency dict
-        :param order: sort keys of dict based on the order
-        :return: item2id mapping
-        """
-        # if not given dict parameter, use self.freqDict
-        freqDict = dict if dict else self.freqDict
-        # if freqDict is None or len(freqDict) == 0:
-        if freqDict is None:
-            raise ValueError, "Error: frequency dict is None!"
-
-        if order == 'alpha':
-            l = sorted(freqDict.keys())
-        elif order == 'freq':
-            tmp = sorted(freqDict.iteritems(), key=operator.itemgetter(1))
-            l = [k for (k, _) in tmp]
-        else:
-            raise ValueError, "Unsupported sorting format!"
-
-        self.item2id = defaultdict(int, {k: v for v, k in enumerate(l)})
-        return self.item2id
-
-    @property
-    def order(self):
-        return self._order
-
-    @order.setter
-    def order(self, order):
-        self._order = order
-
-    def reorder(self, order):
-        """
-        Currently unused
-        TODO: improve
-        :param order: new order
-        :return:
-        """
-        if order == self._order:
-            print "No need to re-order!"
-            return
-        self.buildItem2IDFromFreqDict(order)
-        self._order = order
+if __name__ == '__main__':
+    d = {'a': 1,
+         'b': 2,
+         'c': 3,
+         'd': 4,
+         'e': 5,}
+    freq_dict = FrequencyDict(freq_dict=d)
+    print(freq_dict[2 < freq_dict.freq, freq_dict.freq < 4.4])
